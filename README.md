@@ -1,5 +1,6 @@
 # LuxeStay — Hotel Booking Platform
-
+## **(Apologise for only single commit. Due to few errors, mac to windows integrations, time was running out. Finally we had to only push it to only one account)**
+We hope you please kindly consider our situation
 A full-stack hotel booking application built with **React + Tailwind CSS + Vite** (frontend) and **Spring Boot 3 + MySQL** (backend).
 
 ---
