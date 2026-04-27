@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -30,6 +31,10 @@ public class BookingController {
     public ResponseEntity<ApiResponse<BookingResponse>> createBooking(
             @Valid @RequestBody BookingRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            log.warn("Unauthorized booking attempt");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
         log.info("Creating booking for user: {}", userDetails.getUsername());
         BookingResponse response = bookingService.createBooking(request, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -39,6 +44,10 @@ public class BookingController {
     @GetMapping("/my-bookings")
     public ResponseEntity<ApiResponse<List<BookingResponse>>> getMyBookings(
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            log.warn("Unauthorized access to my-bookings");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
         List<BookingResponse> bookings = bookingService.getUserBookings(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success("Bookings retrieved", bookings));
     }
@@ -47,6 +56,10 @@ public class BookingController {
     public ResponseEntity<ApiResponse<BookingResponse>> getBookingById(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            log.warn("Unauthorized access to booking {}", id);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
         return ResponseEntity.ok(ApiResponse.success("Booking retrieved",
                 bookingService.getBookingById(id, userDetails.getUsername())));
     }
@@ -55,6 +68,10 @@ public class BookingController {
     public ResponseEntity<ApiResponse<BookingResponse>> cancelBooking(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            log.warn("Unauthorized cancellation attempt for booking {}", id);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
         log.info("Cancellation request for booking {} by {}", id, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success("Booking cancelled",
                 bookingService.cancelBooking(id, userDetails.getUsername())));

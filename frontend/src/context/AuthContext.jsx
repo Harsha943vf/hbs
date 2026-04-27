@@ -2,6 +2,17 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 
+function normalizeUser(userData) {
+  if (!userData) return null
+
+  const id = userData.id ?? userData.userId ?? null
+  return {
+    ...userData,
+    id,
+    userId: userData.userId ?? id,
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(null)
@@ -12,16 +23,17 @@ export function AuthProvider({ children }) {
     const storedUser = localStorage.getItem('user')
     if (storedToken && storedUser) {
       setToken(storedToken)
-      setUser(JSON.parse(storedUser))
+      setUser(normalizeUser(JSON.parse(storedUser)))
     }
     setLoading(false)
   }, [])
 
   const login = (tokenValue, userData) => {
+    const normalizedUser = normalizeUser(userData)
     localStorage.setItem('token', tokenValue)
-    localStorage.setItem('user', JSON.stringify(userData))
+    localStorage.setItem('user', JSON.stringify(normalizedUser))
     setToken(tokenValue)
-    setUser(userData)
+    setUser(normalizedUser)
   }
 
   const logout = () => {

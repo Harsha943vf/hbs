@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
+import Chatbot from './components/common/Chatbot'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import LoadingSpinner from './components/common/LoadingSpinner'
 
@@ -75,6 +76,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <Chatbot />
     </div>
   )
 }

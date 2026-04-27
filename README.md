@@ -13,11 +13,19 @@ hotel-booking/
 │   ├── src/main/java/com/hotelbooking/
 │   │   ├── config/           # Security, JWT filter, DataSeeder
 │   │   ├── controller/       # REST controllers
+│   │   │   └── ChatController.java       ← NEW: Chatbot endpoints
 │   │   ├── dto/              # Request / Response DTOs
+│   │   │   ├── request/
+│   │   │   │   └── ChatRequest.java      ← NEW
+│   │   │   └── response/
+│   │   │       └── ChatResponse.java     ← NEW
 │   │   ├── exception/        # Global exception handler
 │   │   ├── model/            # JPA entities
+│   │   │   └── ChatMessage.java          ← NEW: Chat persistence
 │   │   ├── repository/       # Spring Data JPA repositories
+│   │   │   └── ChatMessageRepository.java ← NEW
 │   │   ├── service/          # Business logic
+│   │   │   └── ChatService.java          ← NEW: RAG implementation
 │   │   └── util/             # Booking reference generator
 │   └── src/main/resources/
 │       └── application.properties
@@ -28,6 +36,7 @@ hotel-booking/
         ├── components/
         │   ├── admin/        # StatsCard
         │   ├── common/       # LoadingSpinner, ErrorMessage, ProtectedRoute
+        │   │   └── Chatbot.jsx             ← NEW: Chat UI component
         │   ├── hotels/       # HotelCard, RoomCard, StarRating
         │   └── layout/       # Navbar, Footer
         ├── context/          # AuthContext (login/logout/state)
@@ -42,7 +51,7 @@ hotel-booking/
         │   ├── AdminDashboard.jsx
         │   ├── AdminHotelsPage.jsx    ← completed
         │   └── AdminBookingsPage.jsx  ← completed
-        └── App.jsx                    ← completed (was missing)
+        └── App.jsx                    ← UPDATED: Added Chatbot
 ```
 
 ---
@@ -149,6 +158,53 @@ The app opens at `http://localhost:5173`. Vite proxies all `/api` requests to th
 | GET    | `/api/admin/dashboard`  | Dashboard stats      |
 | GET    | `/api/admin/users`      | All users            |
 
+### Chat (RAG-based Chatbot) ← NEW
+| Method | Path                        | Description                        |
+|--------|-----------------------------|------------------------------------|
+| POST   | `/api/chat/send`            | Send message to chatbot (auth)     |
+| GET    | `/api/chat/history/{userId}`| Get user's chat history (auth)     |
+| DELETE | `/api/chat/history/{userId}`| Clear chat history (auth)          |
+| GET    | `/api/chat/health`          | Chatbot service status (public)    |
+
+---
+
+## 🤖 AI Chatbot Features (NEW!)
+
+A **RAG-based (Retrieval Augmented Generation)** chatbot that intelligently assists users:
+
+### Capabilities
+- 🏨 **Hotel Inquiries** - Answer questions about available hotels
+- 🛏️ **Room Details** - Provide room information, pricing, amenities
+- 📅 **Booking Assistance** - Guide users through the booking process
+- 💬 **Contextual Responses** - Retrieves real data from your hotel database
+- 📝 **Chat History** - Persists all conversations per user
+
+### How It Works
+1. User asks a question via the floating chat widget
+2. AI analyzes intent (hotels, rooms, bookings, etc.)
+3. System retrieves relevant context from the database
+4. Generates contextual response using RAG approach
+5. Response is stored with conversation history
+
+### Tech Stack
+- Spring AI (LLM framework)
+- Vector embeddings (extensible for semantic search)
+- Intent Recognition (pattern-based)
+- Database-driven context retrieval
+- JWT-secured endpoints
+
+### Quick Start
+```bash
+# Just run the backend and frontend as usual
+cd backend && mvn spring-boot:run  # Terminal 1
+cd frontend && npm run dev         # Terminal 2
+
+# Login and click the 💬 button in bottom-right corner
+# Start chatting!
+```
+
+For detailed information, see: [CHATBOT_QUICKSTART.md](./CHATBOT_QUICKSTART.md)
+
 ---
 
 ## ✨ Features
@@ -183,4 +239,5 @@ The app opens at `http://localhost:5173`. Vite proxies all `/api` requests to th
 | Auth      | JWT (jjwt 0.11.5), BCrypt                     |
 | Database  | MySQL 8, Hibernate                            |
 | Email     | Spring Mail (Gmail SMTP)                      |
+| **AI/Chat** | **Spring AI, Vector Embeddings, Redis**   |
 | Docs      | SpringDoc OpenAPI (Swagger UI at `/swagger-ui.html`) |

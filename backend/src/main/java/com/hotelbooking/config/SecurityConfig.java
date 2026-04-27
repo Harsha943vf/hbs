@@ -39,10 +39,13 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/hotels/**", "/api/hotels").permitAll()
-                .requestMatchers("/api/bookings/**").permitAll()
+                // temporarily allow bookings POST to diagnose 403 (revert to authenticated() after fix)
                 .requestMatchers(HttpMethod.POST, "/api/bookings/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/bookings/my-bookings").authenticated()
+                .requestMatchers("/api/bookings/**").authenticated()
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/hotels/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/hotels/**").hasAuthority("ROLE_ADMIN")
@@ -61,9 +64,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        // allow the frontend origins
         config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+        // allow standard methods
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("*"));
+        // explicitly allow Authorization header and common headers
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin"));
+        // expose Authorization header to frontend if backend sends it
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
